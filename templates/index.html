@@ -1,11 +1,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bovine Fortune Teller</title>
+    <title>Cooler Bovine Fortune Teller</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        var sleepSetTimeout_ctrl;
+
+        function sleep(ms) {
+            clearInterval(sleepSetTimeout_ctrl);
+            return new Promise(resolve => sleepSetTimeout_ctrl = setTimeout(resolve, ms));
+        }
+
+        var timeout;
+
+        async function getStatus() {
+
+          let get;
+
+          try {
+            const res = await fetch("{{ url_for('get_frame') }}");
+            get = await res.json();
+          } catch (e) {
+            console.error("Error: ", e);
+          }
+          console.log(get.status)
+
+          if (get.status == -1) {
+            //sleep(1000)
+            document.getElementById("cow-pen").innerHTML = get.frame;
+          } else if (get.status == 1){
+            document.getElementById("cow-pen").innerHTML += " Done.";
+            clearTimeout(timeout);
+            return false;
+          }
+
+          timeout = setTimeout(getStatus, 100);
+        }
+
+        sleep(1000);
+        getStatus();
+    </script>
 </head>
 <body>
     <h1>The cow sayeth...</h1>
-    <pre>{{ user_fortune }}</pre>
+    <pre id="cow-pen"></pre>
 </body>
 </html>
